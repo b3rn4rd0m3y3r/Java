@@ -3,6 +3,7 @@ import java.util.Scanner;
 
 class Jv007{  
 	// Chamada java Jv006
+	// Entrada de dados a partir do teclado
 	// Propriedades da classe
 	// Versão
 	String versao = "1.0";
