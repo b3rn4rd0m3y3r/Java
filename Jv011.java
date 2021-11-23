@@ -1,13 +1,13 @@
 import java.util.Date;
 
 class Jv011{  
-	// Chamada java Jv009
+	// Chamada java Jv011
 	// Propriedades da classe
 	// Versão
 	String versao = "1.0";
 	public static void main(String args[]){  
 		// Declaração de variáveis
-		String nome = "Joao Cabral de Melo Neto";
+		String nome = "Joao";
 		int tamanho = nome.length();
 		int[] minhasContas = new int[10];
 		minhasContas[0] = 11;

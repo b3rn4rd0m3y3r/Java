@@ -3,16 +3,19 @@ import java.util.Scanner;
 import java.io.FileReader;
 
 class Jv017{  
-	// Chamada java Jv012
+	// Chamada java Jv017
 	// Iteração avançada de array
+	// Leitura de arquivos
+	// Leitura de um arquivo "csv"
 	// Propriedades da classe
 	// Versão
 	String versao = "1.0";
 	public static void main(String args[]){  
 		// Declaração de variáveis E INICIALIZAÇÃO.
-		String nome = "Joao Cabral de Melo Neto";
+		String nome = "Joao";
 		int tamanho = nome.length();
 		String[] temp = new String[3];
+		// Pointer de arquivo
 		FileReader fr = null;
 		// Try determina um contexto ou CLOSURE como no javascript
 		try {

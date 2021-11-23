@@ -11,8 +11,12 @@ class Jv010{
 		int tamanho = nome.length();
 		int i;
 		for(i=0;i<tamanho;i++){
+			// nome[i]
 			System.out.print(nome.charAt(i)+" ");
 			}
 		System.out.println("");
 		}
 	}  
+	
+	
+	

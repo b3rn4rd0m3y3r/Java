@@ -67,7 +67,6 @@ class Jv021{
 					} catch (Exception e){
 					e.printStackTrace();
 					}
-				//nome = DtReg.get(2)+"/"+DtReg.get(1)+"/"+DtReg.get(0);
 				System.out.println("Data: "+port.format(data));
 				} else {
 				System.out.println("Data: N/A");
