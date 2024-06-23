@@ -10,10 +10,13 @@ import java.net.*;
 
 public class HttpServer01_03{  
     public static void main(String[] args) throws Exception{  
-		var serverSocket = new ServerSocket(8098); 
+		var PORT = 8098;
+		var serverSocket = new ServerSocket(PORT); 
 		var header = "HTTP/1.1 200 OK\nContent-type: text/html;charset=utf-8\nContent-length: %d\n\n%s";
+		System.out.println("Listen on port: "+PORT);
 		while(true){
 			var connection = serverSocket.accept();
+			// Função readRequest para detalhamento
 			var request = readRequest(connection);
 			// Novo nesta versão 3
 			System.out.println("Requisição: "+request);
@@ -24,7 +27,7 @@ public class HttpServer01_03{
 				}
 			}
 		}  
-
+	// Função readRequest
 	private static HttpReq readRequest(Socket connection) throws Exception{
 		var r = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 		var line = r.readLine();
