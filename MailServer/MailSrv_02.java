@@ -63,6 +63,7 @@ public class MailSrv_02{
 			// Função readRequest para detalhamento
 			BufferedReader in = null;
 			BufferedWriter out = null;
+			
 			try {
                     in = new BufferedReader(new InputStreamReader(connection.getInputStream(), BaseMail.CHARSET_SMTP_POP3));
                     out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), BaseMail.CHARSET_SMTP_POP3)); 
@@ -74,17 +75,32 @@ public class MailSrv_02{
 			var response = "";
 			send("220 meyer SMTP ", out);
 			String pRead = "";
-			while(true){
+			boolean RecData = false;
+			loopData:while(true){
 				if( connection.isClosed() ){
 					break;
 					}
 				pRead = read(in);
 				if( pRead.equals(null) ) { break; }
 				if( pRead.equals(".") ){
-					System.out.println("QUIT achado");
+					System.out.println("end OF DATA");
+					send("250 OK", out);
+					RecData = false;
 					break;
 					}
-				send("250 OK", out);
+				if( pRead.equals("QUIT") ){
+					System.out.println("QUIT found");
+					send("221 meyer logoff", out);
+					break loopData;
+					}
+				if( pRead.equals("DATA") ){
+					send("354 End data with <CR><LF>.<CR><LF>", out);
+					RecData = true;
+					}				
+				response += pRead;
+				if( !RecData ){
+					send("250 OK", out);
+					}
 				}
 			return response;
 		}

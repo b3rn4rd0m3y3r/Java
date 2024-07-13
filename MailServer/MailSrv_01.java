@@ -14,7 +14,7 @@ public class MailSrv_01{
 		var TNAME = "";
 		System.out.println("Listen on port: "+PORT);
 		try {
-			Thread.sleep(20 * 1000);
+			Thread.sleep(15 * 1000); // 15 segundos
 			} catch (final InterruptedException e) { 
 				/* */ 
 			}
@@ -33,30 +33,26 @@ public class MailSrv_01{
 					System.err.println(e.getMessage());					
 					} catch(Exception e){
 						/* */
-					}
-				} ) ;
+					} // Fim do try
+				} ) ;  // Fim do Thread
 				// Extrai informações da Thread [No, Name, int, class]
 				TNAME = t.toString();
 				System.out.print("Thread " + TNAME);
 				// Inicia a Thread
 				t.setDaemon(true);
 				t.start();
-			}
+			} // Fim do while
 		} // Fim do main
 	// Função createSocket
 	private static String createConn(Socket connection) throws Exception {
-			// Função readRequest para detalhamento
 			BufferedReader in = null;
 			BufferedWriter out = null;
 			try {
-                    in = new BufferedReader(new InputStreamReader(connection.getInputStream(), BaseMail.CHARSET_SMTP_POP3));
-                    out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), BaseMail.CHARSET_SMTP_POP3)); 
-
+                    in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+                    out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8)); 
 					} catch (final IOException e) {
 					System.err.println(e.getMessage());
-					e.printStackTrace();
 					}
-			//System.out.println("Requisição: "+request);
 			var response = "";
 			send("220 meyer SMTP ", out);
 			String pRead = "";
@@ -64,6 +60,7 @@ public class MailSrv_01{
 				if( connection.isClosed() ){
 					break;
 					}
+				// Rastreia envios do cliente
 				pRead = read(in);
 				if( pRead.equals(null) ) { break; }
 				if( pRead.equals(".") ){
@@ -73,7 +70,7 @@ public class MailSrv_01{
 				send("250 OK", out);
 				}
 			return response;
-		}
+		} // Fim de createConn
 	// Função read (sobre BufferedInputStream)
     static private String read(final BufferedReader pBR) throws IOException {
         try {
