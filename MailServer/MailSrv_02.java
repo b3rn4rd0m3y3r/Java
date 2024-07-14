@@ -1,5 +1,6 @@
 import java.net.ServerSocket;
 import java.nio.charset.*;
+import java.text.*;
 import java.io.*;
 import java.util.*;
 import java.lang.*;
@@ -63,7 +64,7 @@ public class MailSrv_02{
 			// Função readRequest para detalhamento
 			BufferedReader in = null;
 			BufferedWriter out = null;
-			
+			StringBuilder sb = new StringBuilder();
 			try {
                     in = new BufferedReader(new InputStreamReader(connection.getInputStream(), BaseMail.CHARSET_SMTP_POP3));
                     out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), BaseMail.CHARSET_SMTP_POP3)); 
@@ -72,37 +73,55 @@ public class MailSrv_02{
 					e.printStackTrace();
 					}
 			//System.out.println("Requisição: "+request);
-			var response = "";
 			send("220 meyer SMTP ", out);
 			String pRead = "";
 			boolean RecData = false;
 			loopData:while(true){
+				// Testa se a conexão caiu
 				if( connection.isClosed() ){
 					break;
 					}
+				// Rastreia envios do cliente
 				pRead = read(in);
+				// Null
 				if( pRead.equals(null) ) { break; }
+				// "." - Fim dos dados
 				if( pRead.equals(".") ){
-					System.out.println("end OF DATA");
+					System.out.println("END OF DATA");
 					send("250 OK", out);
 					RecData = false;
 					break;
 					}
+				// "QUIT" - SAIR
 				if( pRead.equals("QUIT") ){
 					System.out.println("QUIT found");
 					send("221 meyer logoff", out);
 					break loopData;
 					}
+				// "DATA" - Estão chegando dados pela stream
 				if( pRead.equals("DATA") ){
 					send("354 End data with <CR><LF>.<CR><LF>", out);
 					RecData = true;
 					}				
-				response += pRead;
+				//response += pRead;
+				// Acrescenta porção lida ao argumento StringBuilder
+				final String correctedRead = pRead.startsWith(".") ? pRead.substring(1) : pRead;
+				sb.append(correctedRead + "\n");
+				// Se não estiver recebendo dados, envia OK ao cliente
 				if( !RecData ){
 					send("250 OK", out);
 					}
 				}
-			return response;
+			// Grava o arquivo do email enviado
+			final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+			final File file = new File("mails/env_" + sdf.format(new Date()) + "_email.txt");
+			file.getParentFile().mkdirs();
+			final String msg = sb.toString();
+			try (FileOutputStream fos = new FileOutputStream(file)) {
+				fos.write(msg.getBytes());
+			}
+			System.out.println("File saved as " + file.getCanonicalPath());
+			return msg;
 		}
 	// Função read (sobre BufferedInputStream)
     static private String read(final BufferedReader pBR) throws IOException {
