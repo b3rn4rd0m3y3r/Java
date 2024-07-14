@@ -13,6 +13,7 @@ public class MailSrv_01{
 		serverSocket.setReuseAddress(true);
 		var TNAME = "";
 		System.out.println("Listen on port: "+PORT);
+		// Definição do tempo de sleep da Thread
 		try {
 			Thread.sleep(15 * 1000); // 15 segundos
 			} catch (final InterruptedException e) { 
@@ -37,13 +38,13 @@ public class MailSrv_01{
 				} ) ;  // Fim do Thread
 				// Extrai informações da Thread [No, Name, int, class]
 				TNAME = t.toString();
-				System.out.print("Thread " + TNAME);
+				System.out.println("Thread " + TNAME);
 				// Inicia a Thread
 				t.setDaemon(true);
 				t.start();
 			} // Fim do while
 		} // Fim do main
-	// Função createSocket
+	// Função createConn - Tratamento de uma conexão cliente
 	private static String createConn(Socket connection) throws Exception {
 			BufferedReader in = null;
 			BufferedWriter out = null;
@@ -56,19 +57,36 @@ public class MailSrv_01{
 			var response = "";
 			send("220 meyer SMTP ", out);
 			String pRead = "";
-			while(true){
+			// Tratamento da conexão com cliente
+			// Teste de comandos recebidos
+			loopData:while(true){
+				// Testa se a conexão caiu
 				if( connection.isClosed() ){
 					break;
 					}
 				// Rastreia envios do cliente
 				pRead = read(in);
+				// Null
 				if( pRead.equals(null) ) { break; }
+				// "." - Fim dos dados
 				if( pRead.equals(".") ){
-					System.out.println("QUIT achado");
+					System.out.println("END OF DATA");
+					send("250 OK", out);
 					break;
 					}
-				send("250 OK", out);
-				}
+				// "QUIT" - SAIR
+				if( pRead.equals("QUIT") ){
+					System.out.println("QUIT found");
+					send("221 meyer logoff", out);
+					break loopData;
+					}
+				// "DATA" - Estão chegando dados pela stream
+				if( pRead.equals("DATA") ){
+					send("354 End data with <CR><LF>.<CR><LF>", out);
+					} else {			
+					send("250 OK", out);
+					}
+				} // Fim do while
 			return response;
 		} // Fim de createConn
 	// Função read (sobre BufferedInputStream)
@@ -84,7 +102,7 @@ public class MailSrv_01{
         }
         return null;
     }
-	// Função send
+	// Função send (sobre BufferedWriter)
     static private void send(final String pMessage, final BufferedWriter pBW) {
         try {
             pBW.write(pMessage + "\n");
@@ -99,6 +117,5 @@ public class MailSrv_01{
 			} catch (final Exception e) {
 				e.printStackTrace();
 			}
-		}
-
+		} // Final de send
 	}  
