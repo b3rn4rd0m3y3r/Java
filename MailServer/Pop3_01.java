@@ -1,22 +1,21 @@
 import java.net.ServerSocket;
 import java.nio.charset.*;
-import java.text.*; // NOVO - Biblioteca incluida (devido a stringbuilder)
 import java.io.*;
 import java.util.*;
 import java.lang.*;
 import java.net.*;
 
-public class MailSrv_02{
+public class Pop3_01{
 	static String FNAME = "";	
     public static void main(String[] args) throws Exception{  
-		var PORT = 25;
+		var PORT = 110;
 		var serverSocket = new ServerSocket(PORT); 
 		serverSocket.setReuseAddress(true);
 		var TNAME = "";
 		System.out.println("Listen on port: "+PORT);
 		// Definição do tempo de sleep da Thread
 		try {
-			Thread.sleep(20 * 1000);
+			Thread.sleep(15 * 1000); // 15 segundos
 			} catch (final InterruptedException e) { 
 				/* */ 
 			}
@@ -32,52 +31,32 @@ public class MailSrv_02{
 					createConn(connection);
 					// SocketException
 					} catch (final SocketException e) {
-					System.err.println(e.getMessage());		
+					System.err.println(e.getMessage());					
 					} catch(Exception e){
 						/* */
 					} // Fim do try
 				} ) ;  // Fim do Thread
 				// Extrai informações da Thread [No, Name, int, class]
 				TNAME = t.toString();
-				// NOVO - Separa os dados do cabeçalho da Thread
-				var rs = readThreadReq(TNAME);
-				System.out.println("Thread No.:" + rs.numero + " Name: " + rs.nome);
+				System.out.println("Thread " + TNAME);
 				// Inicia a Thread
 				t.setDaemon(true);
 				t.start();
 			} // Fim do while
 		} // Fim do main
-	// NOVO - Tipo record para o cabeçalho da Thread
-	private record ThreadReq(String numero, String nome){
-		/* */
-		}
-	// Função readThreadReq
-	private static ThreadReq readThreadReq(String tName){
-		var arr = tName.split("\\[");
-		tName = arr[1];
-		arr = tName.split("\\]");
-		tName = arr[0];
-		arr = tName.split(",");
-		var thNumber = arr[0];
-		var thName = arr[1];		
-		return new ThreadReq(thNumber, thName);
-		}
-	// Função createConn -  - Tratamento de uma conexão cliente
+	// Função createConn - Tratamento de uma conexão cliente
 	private static String createConn(Socket connection) throws Exception {
 			BufferedReader in = null;
 			BufferedWriter out = null;
-			StringBuilder sb = new StringBuilder(); // NOVO
 			try {
-                    in = new BufferedReader(new InputStreamReader(connection.getInputStream(), BaseMail.CHARSET_SMTP_POP3));
-                    out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), BaseMail.CHARSET_SMTP_POP3)); 
+                    in = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+                    out = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8)); 
 					} catch (final IOException e) {
 					System.err.println(e.getMessage());
-					e.printStackTrace(); // NOVO - Error trace
 					}
-			send("220 meyer SMTP ", out);
+			var response = "";
+			send("+OK POP3 server ready", out);
 			String pRead = "";
-			// NOVO - Flag de status "recebendo dados"
-			boolean RecData = false;
 			// Tratamento da conexão com cliente
 			// Teste de comandos recebidos
 			loopData:while(true){
@@ -93,7 +72,6 @@ public class MailSrv_02{
 				if( pRead.equals(".") ){
 					System.out.println("END OF DATA");
 					send("250 OK", out);
-					RecData = false; // Status falso
 					break;
 					}
 				// "QUIT" - SAIR
@@ -105,44 +83,26 @@ public class MailSrv_02{
 				// "DATA" - Estão chegando dados pela stream
 				if( pRead.equals("DATA") ){
 					send("354 End data with <CR><LF>.<CR><LF>", out);
-					RecData = true; // Status true
-					}				
-				//response += pRead;
-				// Acrescenta porção lida ao argumento StringBuilder
-				final String correctedRead = pRead.startsWith(".") ? pRead.substring(1) : pRead;
-				sb.append(correctedRead + "\n");
-				// Se não estiver recebendo dados, envia OK ao cliente
-				if( !RecData ){
+					} else {			
 					send("250 OK", out);
 					}
-				}
-			// NOVO - Grava o arquivo do email enviado
-			save(sb);
-			return sb.toString();
-		}
-	// Função save (salva um email enviado)
-	static void save(StringBuilder txt)  throws IOException { 
-			final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-			final File file = new File("mails/env_" + sdf.format(new Date()) + "_email.txt");
-			file.getParentFile().mkdirs();
-			final String msg = txt.toString();
-			try (FileOutputStream fos = new FileOutputStream(file)) {
-				fos.write(msg.getBytes());
-				}
-			System.out.println("File saved as " + file.getCanonicalPath());		
-		}
+				} // Fim do while
+			return response;
+		} // Fim de createConn
 	// Função read (sobre BufferedInputStream)
     static private String read(final BufferedReader pBR) throws IOException {
         try {
             final String reply = pBR.readLine();
-            System.out.println("RECV:\t" + reply);
+            if( !reply.equals("") ){
+				System.out.println("RECV:\t" + reply);
+				}
             return reply;
         } catch (final SocketTimeoutException e) {
             System.err.println("SERVER TIMEOUT");
         }
         return null;
     }
-	// Função send
+	// Função send (sobre BufferedWriter)
     static private void send(final String pMessage, final BufferedWriter pBW) {
         try {
             pBW.write(pMessage + "\n");
@@ -157,6 +117,5 @@ public class MailSrv_02{
 			} catch (final Exception e) {
 				e.printStackTrace();
 			}
-		}
-
+		} // Final de send
 	}  
