@@ -76,6 +76,8 @@ public class MailSrv_02{
 					}
 			send("220 meyer SMTP ", out);
 			String pRead = "";
+				var pFrom = "";
+				var pTo = "";
 			// NOVO - Flag de status "recebendo dados"
 			boolean RecData = false;
 			// Tratamento da conexão com cliente
@@ -93,7 +95,7 @@ public class MailSrv_02{
 				if( pRead.equals(".") ){
 					System.out.println("END OF DATA");
 					send("250 OK", out);
-					RecData = false; // Status falso
+					RecData = false; // NOVO - Status falso
 					break;
 					}
 				// "QUIT" - SAIR
@@ -107,9 +109,17 @@ public class MailSrv_02{
 					send("354 End data with <CR><LF>.<CR><LF>", out);
 					RecData = true; // Status true
 					}				
-				//response += pRead;
 				// Acrescenta porção lida ao argumento StringBuilder
 				final String correctedRead = pRead.startsWith(".") ? pRead.substring(1) : pRead;
+				
+				var prot = correctedRead.split(":");
+
+				if( prot[0].equals("From") ){
+					pFrom = prot[1];
+					}
+				if( prot[0].equals("To") ){
+					pTo = prot[1];
+					}
 				sb.append(correctedRead + "\n");
 				// Se não estiver recebendo dados, envia OK ao cliente
 				if( !RecData ){
@@ -117,13 +127,15 @@ public class MailSrv_02{
 					}
 				}
 			// NOVO - Grava o arquivo do email enviado
-			save(sb);
+			System.out.println("Para: "+pTo);
+			save(sb, "mails");
+			save(sb, pTo.trim());
 			return sb.toString();
 		}
 	// Função save (salva um email enviado)
-	static void save(StringBuilder txt)  throws IOException { 
+	static void save(StringBuilder txt, String pasta)  throws IOException { 
 			final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-			final File file = new File("mails/env_" + sdf.format(new Date()) + "_email.txt");
+			final File file = new File(pasta+"/env_" + sdf.format(new Date()) + "_email.txt");
 			file.getParentFile().mkdirs();
 			final String msg = txt.toString();
 			try (FileOutputStream fos = new FileOutputStream(file)) {

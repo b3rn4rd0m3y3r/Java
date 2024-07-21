@@ -57,6 +57,7 @@ public class Pop3_01{
 			var response = "";
 			send("+OK POP3 server ready", out);
 			String pRead = "";
+			connection.setSoTimeout(10000);
 			// Tratamento da conexão com cliente
 			// Teste de comandos recebidos
 			loopData:while(true){
@@ -67,24 +68,21 @@ public class Pop3_01{
 				// Rastreia envios do cliente
 				pRead = read(in);
 				// Null
-				if( pRead.equals(null) ) { break; }
+				if( !pRead.equals(null) ) {
+					System.out.println(pRead);
+					break loopData; 
+					} else {
+					System.out.println(pRead);
+					}
 				// "." - Fim dos dados
 				if( pRead.equals(".") ){
 					System.out.println("END OF DATA");
-					send("250 OK", out);
 					break;
 					}
 				// "QUIT" - SAIR
 				if( pRead.equals("QUIT") ){
 					System.out.println("QUIT found");
-					send("221 meyer logoff", out);
-					break loopData;
-					}
-				// "DATA" - Estão chegando dados pela stream
-				if( pRead.equals("DATA") ){
-					send("354 End data with <CR><LF>.<CR><LF>", out);
-					} else {			
-					send("250 OK", out);
+					break;
 					}
 				} // Fim do while
 			return response;
