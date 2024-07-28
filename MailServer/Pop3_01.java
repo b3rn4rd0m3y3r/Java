@@ -56,6 +56,8 @@ public class Pop3_01{
 					}
 			var response = "";
 			send("+OK POP3 server ready", out);
+			System.out.println(connection.getRemoteSocketAddress());
+			System.out.println(connection.toString());
 			String pRead = "";
 			connection.setSoTimeout(10000);
 			// Tratamento da conexão com cliente
@@ -75,12 +77,12 @@ public class Pop3_01{
 					System.out.println(pRead);
 					}
 				// "." - Fim dos dados
-				if( pRead.equals(".") ){
+				if( pRead.startsWith(".") ){
 					System.out.println("END OF DATA");
 					break;
 					}
 				// "QUIT" - SAIR
-				if( pRead.equals("QUIT") ){
+				if( pRead.startsWith("QUIT") ){
 					System.out.println("QUIT found");
 					break;
 					}
